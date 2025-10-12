@@ -41,14 +41,14 @@ export const GET: RequestHandler = async () => {
     // map DB columns to client shape
     const mapped = Array.isArray(data)
         ? data.map((r) => ({
-              id: getString(r, 'id') ?? '',
-              type: getString(r, 'type') ?? 'game',
-              title: getString(r, 'title') ?? '',
-              coverUrl: getString(r, 'cover_url') ?? '',
-              theme: getString(r, 'theme') ?? '',
-              progress: getNumber(r, 'progress') ?? 0,
-              milestones: (typeof r === 'object' && r !== null ? (r as Record<string, unknown>)['milestones'] : [])
-          }))
+            id: getString(r, 'id') ?? '',
+            type: getString(r, 'type') ?? 'game',
+            title: getString(r, 'title') ?? '',
+            coverUrl: getString(r, 'cover_url') ?? '',
+            theme: getString(r, 'theme') ?? '',
+            progress: getNumber(r, 'progress') ?? 0,
+            milestones: (typeof r === 'object' && r !== null ? (r as Record<string, unknown>)['milestones'] : [])
+        }))
         : [];
     return new Response(JSON.stringify(mapped), { status: 200 });
 };
