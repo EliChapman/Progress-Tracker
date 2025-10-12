@@ -56,12 +56,14 @@ export const GET: RequestHandler = async () => {
 export const POST: RequestHandler = async ({ request }) => {
     if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE) return new Response('Not configured', { status: 500 });
 
-    // simple write protection: requires x-write-secret header to match env var
+    // write protection: require VERCEL_WRITE_SECRET to be set and match header
     const WRITE_SECRET = process.env.VERCEL_WRITE_SECRET;
-    if (WRITE_SECRET) {
-        const incoming = request.headers.get('x-write-secret') ?? '';
-        if (incoming !== WRITE_SECRET) return new Response('Unauthorized', { status: 401 });
+    if (!WRITE_SECRET) {
+        // safer default: do not allow writes when secret is missing
+        return new Response('Server misconfigured: VERCEL_WRITE_SECRET not set', { status: 500 });
     }
+    const incoming = request.headers.get('x-write-secret') ?? '';
+    if (incoming !== WRITE_SECRET) return new Response('Unauthorized', { status: 401 });
 
     try {
         const entries = await request.json();
