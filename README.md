@@ -63,9 +63,9 @@ create table public.entries (
 
 4. In Vercel project settings, add the following environment variables:
 
-- `SUPABASE_URL` = your Supabase project URL (e.g. https://xyzcompany.supabase.co)
-- `SUPABASE_SERVICE_ROLE_KEY` = the service_role key (keep this secret)
-- `VERCEL_WRITE_SECRET` = a random secret string used to protect write endpoints (optional but recommended)
+- `SUPABASE_URL` (or `NEXT_PUBLIC_SUPABASE_URL`) = your Supabase project URL (e.g. https://xyzcompany.supabase.co)
+- `SUPABASE_SERVICE_ROLE_KEY` (or `SUPABASE_SERVICE_ROLE`) = the service_role key (keep this secret)
+- `VERCEL_WRITE_SECRET` = a random secret string used to protect write endpoints (required for writes)
 
 The app exposes server endpoints at `/api/entries`:
 

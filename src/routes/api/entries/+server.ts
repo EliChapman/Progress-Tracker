@@ -1,10 +1,11 @@
 import type { RequestHandler } from '@sveltejs/kit';
 
-const SUPABASE_URL = process.env.SUPABASE_URL;
-const SUPABASE_SERVICE_ROLE = process.env.SUPABASE_SERVICE_ROLE_KEY;
+// support multiple common env names (some setups use NEXT_PUBLIC_* vars)
+const SUPABASE_URL = process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL;
+const SUPABASE_SERVICE_ROLE = process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.SUPABASE_SERVICE_ROLE;
 
 if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE) {
-    console.warn('Supabase env vars not set. /api/entries endpoints will error if called.');
+    console.warn('Supabase env vars not set (expected SUPABASE_URL or NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY). /api/entries endpoints will error if called.');
 }
 
 const headers = {
