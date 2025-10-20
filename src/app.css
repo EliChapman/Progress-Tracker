@@ -1,2 +1,21 @@
 @import 'tailwindcss';
 @plugin '@tailwindcss/typography';
+
+/* Global styles */
+html,
+body,
+#svelte {
+    height: 100%;
+}
+
+body {
+    background: #464545;
+    /* main body background */
+    color: #eaeaea;
+    margin: 0;
+    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+}
+
+.app-container {
+    min-height: 100vh;
+}

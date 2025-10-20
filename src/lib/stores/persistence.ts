@@ -71,10 +71,22 @@ export async function remoteLoad(): Promise<Entry[]> {
 
 export async function remoteSave(entries: Entry[]): Promise<boolean> {
     try {
+        const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+        // if a client-visible write secret is provided in env, send it as x-write-secret
+        const CLIENT_WRITE_SECRET = import.meta.env.VITE_WRITE_SECRET ?? import.meta.env.NEXT_PUBLIC_WRITE_SECRET;
+        if (CLIENT_WRITE_SECRET) headers['x-write-secret'] = String(CLIENT_WRITE_SECRET);
+
+        // strip derived fields like `progress` before sending to server
+        const payload = entries.map((e) => {
+            const copy = Object.assign({}, e as unknown) as Record<string, unknown>;
+            delete copy['progress'];
+            return copy;
+        });
+
         const res = await fetch('/api/entries', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(entries)
+            headers,
+            body: JSON.stringify(payload)
         });
         return res.ok;
     } catch (e) {
