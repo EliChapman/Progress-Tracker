@@ -1,10 +1,12 @@
 <script lang="ts">
     import type { Entry } from "$lib/types";
     import { tracker } from "$lib/stores/tracker";
+    import CardTop from "./CardTop.svelte";
+    import CardBottom from "./CardBottom.svelte";
 
     export let entry: Entry;
+    export let position: number;
 
-    // compute progress from milestones (DB no longer stores progress)
     $: milestones = entry.milestones ?? [];
     $: doneCount = milestones.filter((m) => m.done).length;
     $: progress = milestones.length ? doneCount / milestones.length : 0;
@@ -12,12 +14,16 @@
     function toggleMilestone(id: string) {
         tracker.toggleMilestone(entry.id, id);
     }
+
+    console.log(entry);
 </script>
 
-<div class="card" style="border: 2px solid {entry.theme}">
-    <div class="banner" style="background-image: url('{entry.coverUrl}')">
-        <!-- jagged edge can be added later -->
-    </div>
+<div
+    class="card"
+    style="border-color: {entry.theme
+        .primary}; background-image: url('{entry.cover_url}')"
+>
+    <CardTop color={entry.theme.primary} {position} />
     <div class="title">
         {entry.title}
         <span style="float:right; font-weight:600"
@@ -27,7 +33,7 @@
     <div class="progress">
         <div class="bar" style="width: {Math.round(progress * 100)}%"></div>
     </div>
-    <div class="milestones">
+    <!-- <div class="milestones">
         {#each entry.milestones as m}
             <button
                 class="chip {m.done ? 'done' : ''}"
@@ -36,10 +42,15 @@
                 aria-label={m.label}
                 on:click={() => toggleMilestone(m.id)}
             >
-                <img src={m.imageUrl ?? entry.coverUrl} alt={m.label} />
+                <img src={m.imageUrl ?? entry.cover_url} alt={m.label} />
             </button>
         {/each}
-    </div>
+    </div> -->
+    <CardBottom
+        color={entry.theme.primary}
+        {position}
+        url={entry.cover_url || ""}
+    />
 </div>
 
 <style>
@@ -48,14 +59,13 @@
         color: white;
         padding: 16px;
         border-radius: 10px;
-        margin: 12px 0;
-    }
-    .banner {
-        height: 90px;
-        border-radius: 8px;
+        border: 4px solid;
+        position: relative;
+        height: 20%;
         background-size: cover;
         background-position: center;
-        position: relative;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+        margin-top: 10px; /* space for top edge */
     }
     .title {
         font-weight: 700;
@@ -86,10 +96,11 @@
         border-radius: 6px;
         cursor: pointer;
         border: 0;
+        opacity: 0.6;
     }
     .chip.done {
         text-decoration: line-through;
-        opacity: 0.6;
+        opacity: 1;
     }
     .chip img {
         width: 56px;
@@ -98,9 +109,10 @@
         border-radius: 6px;
         display: block;
         box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+        opacity: 0.45;
     }
     .chip.done img {
-        opacity: 0.45;
+        opacity: 1;
         filter: grayscale(0.4);
     }
 </style>

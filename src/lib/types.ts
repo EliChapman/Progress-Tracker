@@ -7,11 +7,17 @@ export interface Milestone {
     imageUrl?: string; // optional thumbnail for milestone
 }
 
+export interface Theme {
+    primary: string;   // hex color code
+    secondary: string; // hex color code
+}
+
 export interface Entry {
     id: string;
-    type: EntryType;
+    type: 'game' | 'show';
     title: string;
-    coverUrl: string;
-    theme: string;     // hex or css color (e.g. "#D22")
     milestones: Milestone[];
+    cover_url: string | null;
+    theme: Theme;
+    updated_at: string | null;
 }

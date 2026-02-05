@@ -7,7 +7,6 @@
     } from "$lib/stores/tracker";
     import { derived } from "svelte/store";
     import { createEventDispatcher } from "svelte";
-    import type { Entry } from "$lib/types";
 
     const entries = tracker;
 
@@ -94,8 +93,11 @@
 
     <div class="sync-bar">
         <div class="status">
-            <span class="status-dot {statusClass}" aria-hidden="true"></span>
-            <span class="visually-hidden">Sync status: {$syncStatus}</span>
+            <span
+                class="status-dot {statusClass}"
+                aria-hidden="true"
+                title="Status: {$syncStatus}"
+            ></span>
         </div>
         {#if $lastSynced}
             <div class="last">Last: {relativeTime($lastSynced)}</div>

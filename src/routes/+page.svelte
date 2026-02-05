@@ -1,6 +1,6 @@
 <script lang="ts">
     import Sidebar from "$lib/components/Sidebar.svelte";
-    import EntryCard from "$lib/components/EntryCard.svelte";
+    import EntryCard from "$lib/components/EntryCard/EntryCard.svelte";
     import { tracker, refreshRemoteWithStatus } from "$lib/stores/tracker";
     import { onMount } from "svelte";
     import type { Entry } from "$lib/types";
@@ -48,9 +48,9 @@
         {#if loading}
             <div style="color:#ddd; padding:12px">Loading remote data…</div>
         {/if}
-        {#each entries.filter((x) => x.type === section) as e}
+        {#each entries.filter((x) => x.type === section) as e, index}
             {#if !selected || selected === e.id}
-                <EntryCard entry={e} />
+                <EntryCard entry={e} position={index} />
             {/if}
         {/each}
     </div>

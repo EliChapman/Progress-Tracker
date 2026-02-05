@@ -8,18 +8,7 @@ const lastSyncedStore = writable<number | null>(null);
 
 function createStore() {
     const initial: Entry[] = [];
-
-    const start = (() => {
-        const loaded = persistence.load();
-        return loaded.length ? loaded : initial;
-    })();
-
-    const { subscribe, set, update } = writable<Entry[]>(start);
-
-    // persist on change
-    subscribe((val) => {
-        persistence.save(val);
-    });
+    const { subscribe, set, update } = writable<Entry[]>(initial);
 
     // helpers
     function toggleMilestone(entryId: string, milestoneId: string) {
@@ -33,7 +22,7 @@ function createStore() {
                 const progress = milestones.length ? doneCount / milestones.length : 0;
                 return { ...e, milestones, progress };
             });
-            // optimistic: persist remote in background and update sync status
+            // persist to Supabase
             (async () => {
                 try {
                     syncStatusStore.set('writing');
@@ -62,13 +51,49 @@ function createStore() {
     }
 
     function addEntry(entry: Entry) {
-        update((entries) => [entry, ...entries]);
+        update((entries) => {
+            const updated = [entry, ...entries];
+            // persist to Supabase
+            (async () => {
+                try {
+                    syncStatusStore.set('writing');
+                    const ok = await persistence.remoteSave(updated);
+                    if (ok) {
+                        lastSyncedStore.set(Date.now());
+                        syncStatusStore.set('idle');
+                    } else {
+                        syncStatusStore.set('error');
+                    }
+                } catch (err) {
+                    console.warn('addEntry save error', err);
+                    syncStatusStore.set('error');
+                }
+            })();
+            return updated;
+        });
     }
 
     function setProgress(entryId: string, p: number) {
-        update((entries) =>
-            entries.map((e) => (e.id === entryId ? { ...e, progress: Math.max(0, Math.min(1, p)) } : e))
-        );
+        update((entries) => {
+            const updated = entries.map((e) => (e.id === entryId ? { ...e, progress: Math.max(0, Math.min(1, p)) } : e));
+            // persist to Supabase
+            (async () => {
+                try {
+                    syncStatusStore.set('writing');
+                    const ok = await persistence.remoteSave(updated);
+                    if (ok) {
+                        lastSyncedStore.set(Date.now());
+                        syncStatusStore.set('idle');
+                    } else {
+                        syncStatusStore.set('error');
+                    }
+                } catch (err) {
+                    console.warn('setProgress save error', err);
+                    syncStatusStore.set('error');
+                }
+            })();
+            return updated;
+        });
     }
 
     return { subscribe, set, update, toggleMilestone, addEntry, setProgress };
@@ -134,8 +159,6 @@ async function refreshRemote() {
                 return { ...(e as object), milestones: msArray, progress } as unknown as Entry;
             });
             tracker.set(computed);
-            // Also persist locally
-            persistence.save(computed);
         }
         return true;
     } catch (e) {
@@ -144,12 +167,8 @@ async function refreshRemote() {
     }
 }
 
-// auto-load remote if enabled via env
-const USE_REMOTE = import.meta.env.VITE_USE_REMOTE ?? import.meta.env.NEXT_PUBLIC_USE_REMOTE;
-if (USE_REMOTE) {
-    // fire and forget
-    // use the status-aware refresh so UI shows syncing state on startup
-    // fire and forget
+// auto-load from Supabase on startup (browser only)
+if (typeof window !== 'undefined') {
     (async () => {
         try {
             await refreshRemoteWithStatus();
